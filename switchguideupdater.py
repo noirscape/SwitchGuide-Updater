@@ -12,12 +12,16 @@ import traceback
 from enum import Enum
 
 BASE_URL = 'http://amsupdater.catgirlsin.space/json/'
+VERSION = '1.1.0'
 
 class WindowState(Enum):
     MAIN_MENU = 0
     FAILED = 1
     UPDATING_HEKATE = 2
     UPDATING_AMS = 3
+    SELF_UPDATE_AVAILABLE = 4
+    UPDATING_SELF = 5
+    SELF_UPDATE_SUCCEEDED = 6
 
 def update_atmosphere():
     r = urllib.request.urlopen(BASE_URL + 'fusee-primary.bin')
@@ -42,6 +46,12 @@ def update_hekate():
     if r.getcode() == 200:
         with open('/bootloader/update.bin', 'wb') as hekate_update_file:
             shutil.copyfileobj(r, hekate_update_file)
+
+def update_self():
+    r = urllib.request.urlopen(BASE_URL + 'switchguideupdater.py')
+    if r.getcode() == 200:
+        with open(sys.argv[0], 'wb') as current_script:
+            shutil.copyfileobj(r, current_script)
 
 def fetch_json():
     ## Get remote.json
@@ -76,9 +86,12 @@ def main():
     status = WindowState.MAIN_MENU
     try:
         local_json, remote_json = fetch_json()
-    except Exception:
+    except:
         fail_exception = traceback.format_exc()
-        status = "failed"
+        status = WindowState.FAILED
+    else:
+        if VERSION != remote_json["updater"]:
+            status = WindowState.SELF_UPDATE_AVAILABLE
     can_update = False
     renderer = NXRenderer()
     while True:
@@ -105,14 +118,29 @@ def main():
                 status = WindowState.UPDATING_HEKATE
             imgui.end_group()
             imgui.separator()
-            imgui.text("SwitchGuide Updater 1.0.0")
+            imgui.text("SwitchGuide Updater {}".format(VERSION))
             imgui.text("© 2018 - Valentijn \"noirscape\" V.")
+        elif status is WindowState.SELF_UPDATE_AVAILABLE:
+            imgui.begin_group()
+            imgui.text("An update for SwitchGuide-Updater is available.")
+            imgui.end_group()
+            imgui.separator()
+            if imgui.button("Install version {}".format(remote_json["updater"])):
+                status = WindowState.UPDATING_SELF
+            if imgui.button("Keep running version {}".format(VERSION)):
+                status = WindowState.MAIN_MENU
         elif status is WindowState.UPDATING_AMS:
             imgui.text("Updating Atmosphere to version {}...".format(remote_json["atmosphere"]))
             can_update = True
         elif status is WindowState.UPDATING_HEKATE:
             imgui.text("Updating Hekate to version {}...".format(remote_json["hekate"]))
             can_update = True
+        elif status is WindowState.UPDATING_SELF:
+            imgui.text("Updating SwitchGuide-Updater to version {}...".format(remote_json["updater"]))
+            can_update = True
+        elif status is WindowState.SELF_UPDATE_SUCCEEDED:
+            imgui.text("Succesfully updated SwitchGuide-Updater")
+            imgui.text("Press HOME to exit and reopen PyNX to run this application.")
         elif status is WindowState.FAILED:
             imgui.text(str(fail_exception))
         imgui.end()
@@ -123,7 +151,7 @@ def main():
         if status is WindowState.UPDATING_AMS and can_update:
             try:
                 update_atmosphere()
-            except Exception as e:
+            except:
                 fail_exception = traceback.format_exc()
                 status = WindowState.FAILED
             else:
@@ -132,13 +160,13 @@ def main():
                     local_json, remote_json = fetch_json()
                     status = WindowState.MAIN_MENU
                     can_update = False
-                except Exception as e:
+                except:
                     fail_exception = traceback.format_exc()
                     status = WindowState.FAILED
         elif status is WindowState.UPDATING_HEKATE and can_update:
             try:
                 update_hekate()
-            except Exception as e:
+            except:
                 fail_exception = traceback.format_exc()
                 status = WindowState.FAILED
             else:
@@ -147,9 +175,18 @@ def main():
                     local_json, remote_json = fetch_json()
                     status = WindowState.MAIN_MENU
                     can_update = False
-                except Exception as e:
+                except:
                     fail_exception = traceback.format_exc()
                     status = WindowState.FAILED
+        elif status is WindowState.UPDATING_SELF and can_update:
+            try:
+                update_self()
+            except:
+                fail_exception = traceback.format_exc()
+                status = WindowState.FAILED
+            else:
+                status = WindowState.SELF_UPDATE_SUCCEEDED
+                can_update = False
 
     renderer.shutdown()
 
