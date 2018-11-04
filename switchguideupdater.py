@@ -8,6 +8,7 @@ import imguihelper
 import _nx
 from imgui.integrations.nx import NXRenderer
 import sys
+import traceback
 from enum import Enum
 
 BASE_URL = 'http://amsupdater.catgirlsin.space/json/'
@@ -75,8 +76,8 @@ def main():
     status = WindowState.MAIN_MENU
     try:
         local_json, remote_json = fetch_json()
-    except Exception as e:
-        fail_exception = e
+    except Exception:
+        fail_exception = traceback.format_exc()
         status = "failed"
     can_update = False
     renderer = NXRenderer()
@@ -123,7 +124,7 @@ def main():
             try:
                 update_atmosphere()
             except Exception as e:
-                fail_exception = e
+                fail_exception = traceback.format_exc()
                 status = WindowState.FAILED
             else:
                 try:
@@ -132,13 +133,13 @@ def main():
                     status = WindowState.MAIN_MENU
                     can_update = False
                 except Exception as e:
-                    fail_exception = e
+                    fail_exception = traceback.format_exc()
                     status = WindowState.FAILED
         elif status is WindowState.UPDATING_HEKATE and can_update:
             try:
                 update_hekate()
             except Exception as e:
-                fail_exception = e
+                fail_exception = traceback.format_exc()
                 status = WindowState.FAILED
             else:
                 try:
@@ -147,7 +148,7 @@ def main():
                     status = WindowState.MAIN_MENU
                     can_update = False
                 except Exception as e:
-                    fail_exception = e
+                    fail_exception = traceback.format_exc()
                     status = WindowState.FAILED
 
     renderer.shutdown()
