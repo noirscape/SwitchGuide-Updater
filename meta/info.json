@@ -1,0 +1,11 @@
+{
+  "title": "SwitchGuide-Updater",
+  "author": "noirscape",
+  "category": "tool",
+  "version": "1.1.0",
+  "url": "https://github.com/noirscape/SwitchGuide-Updater",
+  "license": "Affero GPLv3",
+  "description": "A simple no-frills Atmosphere and Hekate Updater",
+  "details": "A PyNX application that can update Atmosphere and Hekate to the latest version.\\n\\nUpdates only the essential files needed to run Atmosphere and Hekate. It does not supply the Hekate files.\\n\\nContains a remote updater build in the script itself that can update the application automatically to permit for adding files that may have changed during updates.\\n\\nThis application is a part of my Switch Guide, https://switchguide.xyz/ .",
+  "changelog": "1.1.0\\n-----\\n- Self-updater added\\n\\n1.0.0\\n-----\\n- Initial release\\n- Updates the following files\\n  - creport.kip\\n  - update.bin\\n  - fusee-primary and fusee-secondary"
+}
