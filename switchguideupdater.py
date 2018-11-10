@@ -40,6 +40,11 @@ def update_atmosphere():
         with open('/atmosphere/titles/0100000000000036/exefs.nsp', 'wb') as creport:
             shutil.copyfileobj(r_three, creport)
 
+    r_four = urllib.request.urlopen(BASE_URL + 'atmosphere/titles/0100000000000032/exefs.nsp')
+    if r_four.getcode() == 200:
+        os.makedirs('/atmosphere/titles/0100000000000032/', exist_ok=True)
+        with open('/atmosphere/titles/0100000000000032/exefs.nsp', 'wb') as settings_mitm:
+            shutil.copyfileobj(r_three, settings_mitm)
 
 def update_hekate():
     r = urllib.request.urlopen(BASE_URL + 'hekate.bin')
