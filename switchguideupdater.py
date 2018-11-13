@@ -12,7 +12,7 @@ import traceback
 from enum import Enum
 
 BASE_URL = 'http://amsupdater.catgirlsin.space/json/'
-VERSION = '1.1.1'
+VERSION = '1.1.3'
 
 class WindowState(Enum):
     MAIN_MENU = 0
