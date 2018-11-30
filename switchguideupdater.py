@@ -12,7 +12,7 @@ import traceback
 from enum import Enum
 
 BASE_URL = 'http://amsupdater.catgirlsin.space/json/'
-VERSION = '1.2.0'
+VERSION = '1.2.1'
 
 class WindowState(Enum):
     MAIN_MENU = 0
@@ -32,8 +32,11 @@ def download_file(remote_name, local_path):
 def update_atmosphere():
     download_file(BASE_URL + 'fusee-primary.bin', '/fusee-primary.bin')
     download_file(BASE_URL + 'fusee-secondary.bin', '/fusee-secondary.bin')
+    os.makedirs('/atmosphere/titles/0100000000000032/', exist_ok=True)
     download_file(BASE_URL + 'atmosphere/titles/0100000000000032/exefs.nsp', '/atmosphere/titles/0100000000000032/exefs.nsp')
+    os.makedirs('/atmosphere/titles/0100000000000034/', exist_ok=True)
     download_file(BASE_URL + 'atmosphere/titles/0100000000000034/exefs.nsp', '/atmosphere/titles/0100000000000034/exefs.nsp')
+    os.makedirs('/atmosphere/titles/0100000000000036/', exist_ok=True)
     download_file(BASE_URL + 'atmosphere/titles/0100000000000036/exefs.nsp', '/atmosphere/titles/0100000000000036/exefs.nsp')
 
 def update_hekate():
