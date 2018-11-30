@@ -12,7 +12,7 @@ import traceback
 from enum import Enum
 
 BASE_URL = 'http://amsupdater.catgirlsin.space/json/'
-VERSION = '1.2.2'
+VERSION = '1.2.3'
 
 class WindowState(Enum):
     MAIN_MENU = 0
@@ -24,7 +24,7 @@ class WindowState(Enum):
     SELF_UPDATE_SUCCEEDED = 6
 
 def download_file(remote_name, local_path):
-    r = urllib.request.urlopen(BASE_URL + remote_path)
+    r = urllib.request.urlopen(BASE_URL + remote_name)
     if r.getcode() == 200:
         with open(local_path, 'wb') as output_path:
             shutil.copyfileobj(r, output_path)
