@@ -12,7 +12,7 @@ import traceback
 from enum import Enum
 
 BASE_URL = 'http://amsupdater.catgirlsin.space/json/'
-VERSION = '1.1.3'
+VERSION = '1.2.0'
 
 class WindowState(Enum):
     MAIN_MENU = 0
@@ -23,34 +23,21 @@ class WindowState(Enum):
     UPDATING_SELF = 5
     SELF_UPDATE_SUCCEEDED = 6
 
-def update_atmosphere():
+def download_file(remote_name, local_path):
     r = urllib.request.urlopen(BASE_URL + 'fusee-primary.bin')
     if r.getcode() == 200:
-        with open('/fusee-primary.bin', 'wb') as fusee_primary:
-            shutil.copyfileobj(r, fusee_primary)
+        with open(local_path, 'wb') as output_path:
+            shutil.copyfileobj(r, output_path)
 
-    r_two = urllib.request.urlopen(BASE_URL + 'fusee-secondary.bin')
-    if r_two.getcode() == 200:
-        with open('/fusee-secondary.bin', 'wb') as fusee_secondary:
-            shutil.copyfileobj(r_two, fusee_secondary)
-
-    r_three = urllib.request.urlopen(BASE_URL + 'atmosphere/titles/0100000000000036/exefs.nsp')
-    if r_three.getcode() == 200:
-        os.makedirs('/atmosphere/titles/0100000000000036/', exist_ok=True)
-        with open('/atmosphere/titles/0100000000000036/exefs.nsp', 'wb') as creport:
-            shutil.copyfileobj(r_three, creport)
-
-    r_four = urllib.request.urlopen(BASE_URL + 'atmosphere/titles/0100000000000032/exefs.nsp')
-    if r_four.getcode() == 200:
-        os.makedirs('/atmosphere/titles/0100000000000032/', exist_ok=True)
-        with open('/atmosphere/titles/0100000000000032/exefs.nsp', 'wb') as settings_mitm:
-            shutil.copyfileobj(r_four, settings_mitm)
+def update_atmosphere():
+    download_file(BASE_URL + 'fusee-primary.bin', '/fusee-primary.bin')
+    download_file(BASE_URL + 'fusee-secondary.bin', '/fusee-secondary.bin')
+    download_file(BASE_URL + 'atmosphere/titles/0100000000000032/exefs.nsp', '/atmosphere/titles/0100000000000032/exefs.nsp')
+    download_file(BASE_URL + 'atmosphere/titles/0100000000000034/exefs.nsp', '/atmosphere/titles/0100000000000034/exefs.nsp')
+    download_file(BASE_URL + 'atmosphere/titles/0100000000000036/exefs.nsp', '/atmosphere/titles/0100000000000036/exefs.nsp')
 
 def update_hekate():
-    r = urllib.request.urlopen(BASE_URL + 'hekate.bin')
-    if r.getcode() == 200:
-        with open('/bootloader/update.bin', 'wb') as hekate_update_file:
-            shutil.copyfileobj(r, hekate_update_file)
+    download_file(BASE_URL + 'hekate.bin', '/bootloader/update.bin')
 
 def update_self():
     r = urllib.request.urlopen(BASE_URL + 'switchguideupdater.py')
