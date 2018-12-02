@@ -12,7 +12,7 @@ import traceback
 from enum import Enum
 
 BASE_URL = 'http://amsupdater.catgirlsin.space/json/'
-VERSION = '1.2.4'
+VERSION = '1.3.0'
 
 class WindowState(Enum):
     MAIN_MENU = 0
@@ -46,10 +46,10 @@ def update_hekate():
 
 def update_nx_hbloader():
     os.makedirs('/atmosphere', exist_ok=True)
-    download_file(BASE_URL + 'hbl.nsp', '/atmosphere')
+    download_file(BASE_URL + 'hbl.nsp', '/atmosphere/hbl.nsp')
 
 def update_nx_hbmenu():
-    download_file(BASE_URL + 'hbmenu.nro', '/')
+    download_file(BASE_URL + 'hbmenu.nro', '/hbmenu.nro')
 
 def update_self():
     r = urllib.request.urlopen(BASE_URL + 'switchguideupdater.py')
