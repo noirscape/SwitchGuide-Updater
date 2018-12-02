@@ -175,6 +175,7 @@ def main():
             can_update = True
         elif status is WindowState.UPDATING_NX_HBMENU:
             imgui.text("Updating nx-hbmenu to version {}...".format(remote_json["nx-hbmenu"]))
+            can_update = True
         elif status is WindowState.SELF_UPDATE_SUCCEEDED:
             imgui.text("Succesfully updated SwitchGuide-Updater")
             imgui.text("Press HOME to exit and reopen PyNX to run this application.")
