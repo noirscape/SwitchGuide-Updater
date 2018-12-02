@@ -49,7 +49,7 @@ def update_nx_hbloader():
     download_file(BASE_URL + 'hbl.nsp', '/atmosphere')
 
 def update_nx_hbmenu():
-    download_file(BASE_URL + 'hbl.nro', '/')
+    download_file(BASE_URL + 'hbmenu.nro', '/')
 
 def update_self():
     r = urllib.request.urlopen(BASE_URL + 'switchguideupdater.py')
