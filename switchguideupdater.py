@@ -22,6 +22,8 @@ class WindowState(Enum):
     SELF_UPDATE_AVAILABLE = 4
     UPDATING_SELF = 5
     SELF_UPDATE_SUCCEEDED = 6
+    UPDATING_NX_HBMENU = 7
+    UPDATING_NX_HBLOADER = 8
 
 def download_file(remote_name, local_path):
     r = urllib.request.urlopen(remote_name)
@@ -42,6 +44,13 @@ def update_atmosphere():
 def update_hekate():
     download_file(BASE_URL + 'hekate.bin', '/bootloader/update.bin')
 
+def update_nx_hbloader():
+    os.makedirs('/atmosphere', exist_ok=True)
+    download_file(BASE_URL + 'hbl.nsp', '/atmosphere')
+
+def update_nx_hbmenu():
+    download_file(BASE_URL + 'hbl.nro', '/')
+
 def update_self():
     r = urllib.request.urlopen(BASE_URL + 'switchguideupdater.py')
     if r.getcode() == 200:
@@ -58,21 +67,37 @@ def fetch_json():
         with open('SwitchGuideUpdater/local.json', 'r') as localfile:
             local_json = json.load(localfile)
     except FileNotFoundError: # Local json doesn't exist yet? No biggie, we'll just load in that we don't know it!
-        local_json = {"atmosphere": "Unknown, run \"Update Atmosphere\" at least once!", "hekate": "Unknown, run \"Update Hekate\" at least once!"}
+        local_json = {
+            "atmosphere": "Unknown, run \"Update Atmosphere\" at least once!", 
+            "hekate": "Unknown, run \"Update Hekate\" at least once!",
+            "nx-hbmenu": "Unknown, run \"Update nx-hbmenu\" at least once!",
+            "nx-hbloader": "Unknown, run \"Update nx-hbloader\" at least once!"
+        }
+
+    if "nx-hbmenu" not in local_json:
+        local_json["nx-hbmenu"] = "Unknown, run \"Update nx-hbmenu\" at least once!"
+    if "nx-hbloader" not in local_json:
+        local_json["nx-hbloader"] = "Unknown, run \"Update nx-hbloader\" at least once!"
 
     return local_json, remote_json
 
 
-def write_update_file(local_json, remote_json, updated_ams=False, updated_hekate=False):
+def write_update_file(local_json, remote_json, updated_ams=False, updated_hekate=False, updated_nx_hbmenu=False, updated_nx_hbloader=False):
     os.makedirs('SwitchGuideUpdater', exist_ok=True)
     output_json = {
         "atmosphere": local_json["atmosphere"],
-        "hekate": local_json["hekate"]
+        "hekate": local_json["hekate"],
+        "nx-hbmenu": local_json["nx-hbmenu"],
+        "nx-hbloader": local_json["nx-hbloader"]
     }
     if updated_ams:
         output_json["atmosphere"] = remote_json["atmosphere"]
     if updated_hekate:
         output_json["hekate"] = remote_json["hekate"]
+    if updated_nx_hbloader:
+        output_json["nx-hbloader"] = remote_json["nx-hbloader"]
+    if updated_nx_hbmenu:
+        output_json["nx-hbmenu"] = remote_json["nx-hbmenu"]
     with open('SwitchGuideUpdater/local.json', 'w') as localfile:
         json.dump(output_json, localfile)
 
@@ -113,6 +138,18 @@ def main():
                 status = WindowState.UPDATING_HEKATE
             imgui.end_group()
             imgui.separator()
+            imgui.begin_group()
+            imgui.text("Loaded nx-hbmenu version: {}\nRemote nx-hbmenu version: {}"
+                    .format(local_json["nx-hbmenu"], remote_json["nx-hbmenu"]))
+            imgui.text("Loaded nx-hbloader version: {}\nRemote nx-hbloader version: {}"
+                    .format(local_json["nx-hbloader"], remote_json["nx-hbloader"]))
+            if imgui.button("Update nx-hbmenu"):
+                status = WindowState.UPDATING_NX_HBMENU
+            imgui.same_line()
+            if imgui.button("Update nx-hbloader"):
+                status = WindowState.UPDATING_NX_HBLOADER
+            imgui.end_group()
+            imgui.separator()
             imgui.text("SwitchGuide Updater {}".format(VERSION))
             imgui.text("© 2018 - Valentijn \"noirscape\" V.")
         elif status is WindowState.SELF_UPDATE_AVAILABLE:
@@ -133,6 +170,11 @@ def main():
         elif status is WindowState.UPDATING_SELF:
             imgui.text("Updating SwitchGuide-Updater to version {}...".format(remote_json["updater"]))
             can_update = True
+        elif status is WindowState.UPDATING_NX_HBLOADER:
+            imgui.text("Updating nx-hbloader to version {}...".format(remote_json["nx-hbloader"]))
+            can_update = True
+        elif status is WindowState.UPDATING_NX_HBMENU:
+            imgui.text("Updating nx-hbmenu to version {}...".format(remote_json["nx-hbmenu"]))
         elif status is WindowState.SELF_UPDATE_SUCCEEDED:
             imgui.text("Succesfully updated SwitchGuide-Updater")
             imgui.text("Press HOME to exit and reopen PyNX to run this application.")
@@ -182,6 +224,36 @@ def main():
             else:
                 status = WindowState.SELF_UPDATE_SUCCEEDED
                 can_update = False
+        elif status is WindowState.UPDATING_NX_HBLOADER and can_update:
+            try:
+                update_nx_hbloader()
+            except:
+                fail_exception = traceback.format_exc()
+                status = WindowState.FAILED
+            else:
+                try:
+                    write_update_file(local_json, remote_json, updated_nx_hbloader=True)
+                    local_json, remote_json = fetch_json()
+                    status = WindowState.MAIN_MENU
+                    can_update = False
+                except:
+                    fail_exception = traceback.format_exc()
+                    status = WindowState.FAILED
+        elif status is WindowState.UPDATING_NX_HBMENU and can_update:
+            try:
+                update_nx_hbmenu()
+            except:
+                fail_exception = traceback.format_exc()
+                status = WindowState.FAILED
+            else:
+                try:
+                    write_update_file(local_json, remote_json, updated_nx_hbmenu=True)
+                    local_json, remote_json = fetch_json()
+                    status = WindowState.MAIN_MENU
+                    can_update = False
+                except:
+                    fail_exception = traceback.format_exc()
+                    status = WindowState.FAILED
 
     renderer.shutdown()
 
