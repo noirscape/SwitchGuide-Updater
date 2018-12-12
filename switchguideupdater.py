@@ -12,7 +12,7 @@ import traceback
 from enum import Enum
 
 BASE_URL = 'http://amsupdater.catgirlsin.space/json/'
-VERSION = '1.3.0'
+VERSION = '1.4.0'
 
 class WindowState(Enum):
     MAIN_MENU = 0
@@ -32,14 +32,15 @@ def download_file(remote_name, local_path):
             shutil.copyfileobj(r, output_path)
 
 def update_atmosphere():
-    download_file(BASE_URL + 'fusee-primary.bin', '/fusee-primary.bin')
-    download_file(BASE_URL + 'fusee-secondary.bin', '/fusee-secondary.bin')
+    download_file(BASE_URL + 'fusee-primary.bin', '/atmosphere/fusee-primary.bin')
+    download_file(BASE_URL + 'atmosphere/fusee-secondary.bin', '/atmosphere/fusee-secondary.bin')
     os.makedirs('/atmosphere/titles/0100000000000032/', exist_ok=True)
     download_file(BASE_URL + 'atmosphere/titles/0100000000000032/exefs.nsp', '/atmosphere/titles/0100000000000032/exefs.nsp')
     os.makedirs('/atmosphere/titles/0100000000000034/', exist_ok=True)
     download_file(BASE_URL + 'atmosphere/titles/0100000000000034/exefs.nsp', '/atmosphere/titles/0100000000000034/exefs.nsp')
     os.makedirs('/atmosphere/titles/0100000000000036/', exist_ok=True)
     download_file(BASE_URL + 'atmosphere/titles/0100000000000036/exefs.nsp', '/atmosphere/titles/0100000000000036/exefs.nsp')
+    zerodoteightdottwoupdate()
 
 def update_hekate():
     download_file(BASE_URL + 'hekate.bin', '/bootloader/update.bin')
@@ -56,6 +57,20 @@ def update_self():
     if r.getcode() == 200:
         with open(sys.argv[0], 'wb') as current_script:
             shutil.copyfileobj(r, current_script)
+
+def zerodoteightdottwoupdate():
+    update_hekate_config = False
+    os.makedirs('/atmosphere', exist_ok=True)
+    if os.path.isfile('/BCT.ini'):
+        os.remove('/BCT.ini')
+    if os.path.isfile('/fusee-primary.bin'):
+        os.remove('/fusee-primary.bin')
+        update_hekate_config = True
+    if os.path.isfile('/fusee-secondary.bin'):
+        os.remove('/fusee-secondary.bin')
+    if update_hekate_config:
+        os.remove('/bootloader/hekate_ipl.ini')
+        download_file('http://amsupdater.catgirlsin.space/json/hekate_ipl.ini', '/bootloader/hekate_ipl.ini')
 
 def fetch_json():
     ## Get remote.json
